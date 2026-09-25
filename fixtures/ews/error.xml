@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original candidate error shape; not live evidence or a verified client profile. -->
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
+ xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+ <s:Body><m:GetUserAvailabilityResponse><m:FreeBusyResponseArray><m:FreeBusyResponse>
+  <m:ResponseMessage ResponseClass="Error"><m:MessageText>Availability unavailable.</m:MessageText><m:ResponseCode>ErrorNoFreeBusyAccess</m:ResponseCode></m:ResponseMessage>
+  <m:FreeBusyView><t:FreeBusyViewType>None</t:FreeBusyViewType></m:FreeBusyView>
+ </m:FreeBusyResponse></m:FreeBusyResponseArray></m:GetUserAvailabilityResponse></s:Body>
+</s:Envelope>

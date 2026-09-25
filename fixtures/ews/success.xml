@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original candidate FreeBusyMerged response; native compatibility remains gated. -->
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
+ xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+ <s:Body><m:GetUserAvailabilityResponse><m:FreeBusyResponseArray><m:FreeBusyResponse>
+  <m:ResponseMessage ResponseClass="Success"><m:ResponseCode>NoError</m:ResponseCode></m:ResponseMessage>
+  <m:FreeBusyView><t:FreeBusyViewType>FreeBusyMerged</t:FreeBusyViewType><t:MergedFreeBusy>02133000</t:MergedFreeBusy>
+   <t:CalendarEventArray><t:CalendarEvent><t:StartTime>2026-09-14T02:30:00Z</t:StartTime><t:EndTime>2026-09-14T03:00:00Z</t:EndTime><t:BusyType>Busy</t:BusyType></t:CalendarEvent>
+<t:CalendarEvent><t:StartTime>2026-09-14T03:00:00Z</t:StartTime><t:EndTime>2026-09-14T03:30:00Z</t:EndTime><t:BusyType>Tentative</t:BusyType></t:CalendarEvent>
+<t:CalendarEvent><t:StartTime>2026-09-14T03:30:00Z</t:StartTime><t:EndTime>2026-09-14T04:30:00Z</t:EndTime><t:BusyType>OOF</t:BusyType></t:CalendarEvent></t:CalendarEventArray>
+  </m:FreeBusyView>
+ </m:FreeBusyResponse></m:FreeBusyResponseArray></m:GetUserAvailabilityResponse></s:Body>
+</s:Envelope>

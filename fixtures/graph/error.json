@@ -1,0 +1,11 @@
+{
+  "value": [
+    {
+      "scheduleId": "alice@tenant.example.invalid",
+      "error": {
+        "responseCode": "5006",
+        "message": "Synthetic calendar-entry overflow. Not a live server response."
+      }
+    }
+  ]
+}

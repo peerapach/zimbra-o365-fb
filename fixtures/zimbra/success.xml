@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original synthetic schedule; not live evidence. -->
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body><GetFreeBusyResponse xmlns="urn:zimbraMail">
+    <usr id="bob@example.invalid">
+        <f s="1789351200000" e="1789353000000"/>
+        <b s="1789353000000" e="1789354800000"/>
+        <t s="1789354800000" e="1789356600000"/>
+        <u s="1789356600000" e="1789360200000"/>
+        <f s="1789360200000" e="1789365600000"/>
+    </usr>
+  </GetFreeBusyResponse></soap:Body>
+</soap:Envelope>

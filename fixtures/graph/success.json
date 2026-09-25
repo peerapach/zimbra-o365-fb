@@ -1,0 +1,64 @@
+{
+  "value": [
+    {
+      "scheduleId": "alice@tenant.example.invalid",
+      "availabilityView": "02133000",
+      "scheduleItems": [
+        {
+          "status": "busy",
+          "start": {
+            "dateTime": "2026-09-14T02:30:00",
+            "timeZone": "UTC"
+          },
+          "end": {
+            "dateTime": "2026-09-14T03:00:00",
+            "timeZone": "UTC"
+          },
+          "subject": "DO_NOT_LEAK_SUBJECT",
+          "location": "DO_NOT_LEAK_LOCATION",
+          "isPrivate": true
+        },
+        {
+          "status": "tentative",
+          "start": {
+            "dateTime": "2026-09-14T03:00:00",
+            "timeZone": "UTC"
+          },
+          "end": {
+            "dateTime": "2026-09-14T03:30:00",
+            "timeZone": "UTC"
+          },
+          "subject": "DO_NOT_LEAK_SUBJECT",
+          "location": "DO_NOT_LEAK_LOCATION",
+          "isPrivate": true
+        },
+        {
+          "status": "oof",
+          "start": {
+            "dateTime": "2026-09-14T03:30:00",
+            "timeZone": "UTC"
+          },
+          "end": {
+            "dateTime": "2026-09-14T04:30:00",
+            "timeZone": "UTC"
+          },
+          "subject": "DO_NOT_LEAK_SUBJECT",
+          "location": "DO_NOT_LEAK_LOCATION",
+          "isPrivate": true
+        },
+        {
+          "status": "workingElsewhere",
+          "start": {
+            "dateTime": "2026-09-14T05:00:00",
+            "timeZone": "UTC"
+          },
+          "end": {
+            "dateTime": "2026-09-14T05:30:00",
+            "timeZone": "UTC"
+          },
+          "subject": "DO_NOT_LEAK_ELSEWHERE"
+        }
+      ]
+    }
+  ]
+}

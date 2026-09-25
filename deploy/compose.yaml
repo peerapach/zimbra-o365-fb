@@ -1,0 +1,75 @@
+# Candidate Linux/rootful per-host template. Run once on EACH of two hosts.
+# Required variables contain paths/digests/approval only, never secret values.
+name: freebusy-gateway
+services:
+  gateway:
+    image: ${FREEBUSY_IMAGE:?set an approved registry image with @sha256 digest}
+    pull_policy: always
+    network_mode: host
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    init: true
+    restart: unless-stopped
+    cpus: "1.0"
+    mem_limit: 512m
+    memswap_limit: 512m
+    pids_limit: 128
+    # No writable application volume/tmpfs: runtime has no scratch-file requirement.
+    stop_signal: SIGTERM
+    stop_grace_period: 15s
+    environment:
+      NODE_ENV: production
+      FREEBUSY_CONFIG: /etc/freebusy/gateway.json
+      FREEBUSY_INGRESS_APPROVED: ${FREEBUSY_INGRESS_APPROVED:?administrator must approve public+private TLS ingress}
+    volumes:
+      - type: bind
+        source: ${FREEBUSY_CONFIG_DIR:?set an absolute immutable reviewed config directory}
+        target: /etc/freebusy
+        read_only: true
+        bind:
+          create_host_path: false
+    secrets:
+      - source: graph_certificate
+        target: graph-certificate.pem
+      - source: zimbra_password
+        target: zimbra-password
+      - source: exo_interop
+        target: exo-interop
+      - source: zimbra_interop
+        target: zimbra-interop
+    healthcheck:
+      # Management only, no credentials/provider calls; ports follow mounted config.
+      test:
+        - CMD
+        - node
+        - --input-type=module
+        - -e
+        - >-
+          import {readFileSync} from 'node:fs';
+          const {management:m}=JSON.parse(readFileSync(process.env.FREEBUSY_CONFIG,'utf8'));
+          const host=m.bind==='::1'?'[::1]':m.bind;
+          fetch('http://'+host+':'+m.port+'/readyz',{signal:AbortSignal.timeout(2000)})
+          .then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1));
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# File-backed Compose secrets are bind mounts. Provision UID1000-owned direct
+# regular files, mode0400/0600 on the host; uid/gid/mode remapping is not assumed.
+secrets:
+  graph_certificate:
+    file: ${FREEBUSY_SECRETS_DIR:?set approved absolute secret-store materialization directory}/graph-certificate.pem
+  zimbra_password:
+    file: ${FREEBUSY_SECRETS_DIR:?set approved absolute secret-store materialization directory}/zimbra-password
+  exo_interop:
+    file: ${FREEBUSY_SECRETS_DIR:?set approved absolute secret-store materialization directory}/exo-interop
+  zimbra_interop:
+    file: ${FREEBUSY_SECRETS_DIR:?set approved absolute secret-store materialization directory}/zimbra-interop

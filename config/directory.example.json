@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "pilot-zimbra-bob",
+      "provider": "zimbra",
+      "canonicalSmtp": "bob@example.invalid",
+      "aliases": [
+        "bob@zfb.example.invalid"
+      ],
+      "allowedPrincipals": [
+        "pilot-exo"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "pilot-m365-alice",
+      "provider": "graph",
+      "canonicalSmtp": "alice@tenant.example.invalid",
+      "graphObjectId": "00000000-0000-0000-0000-000000000001",
+      "aliases": [
+        "alice@company.example.invalid"
+      ],
+      "allowedPrincipals": [
+        "pilot-zimbra"
+      ],
+      "enabled": true
+    }
+  ]
+}

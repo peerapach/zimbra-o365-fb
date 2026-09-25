@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "original-synthetic-only",
+  "files": [
+    {
+      "path": "fixtures/autodiscover/request.xml",
+      "kind": "synthetic",
+      "sha256": "4e4cdac3db4a7605f29f7a0377e215f26ffef6744f3c141e31635bf07dc9457b"
+    },
+    {
+      "path": "fixtures/autodiscover/response.xml",
+      "kind": "synthetic",
+      "sha256": "d828b2b4553418abc3a19432439f343fa9ff27c142df25bb23ecc1814c423eb4"
+    },
+    {
+      "path": "fixtures/ews/error.xml",
+      "kind": "synthetic",
+      "sha256": "82bd68f40d959e70f33b38c23f4edb83485bf7a10b66031777f30ede9c487d34"
+    },
+    {
+      "path": "fixtures/ews/request.xml",
+      "kind": "synthetic",
+      "sha256": "bfb52cccac672f0d14e166f63c87e10366783bc1dc2ec2edfedd5b9d7ab954db"
+    },
+    {
+      "path": "fixtures/ews/success.xml",
+      "kind": "synthetic",
+      "sha256": "58d44e6a28b96c4cff3f310b98167bfaa0c1cd54c2821ab3648a6ce53bbdb34a"
+    },
+    {
+      "path": "fixtures/golden/timeline.json",
+      "kind": "synthetic",
+      "sha256": "7202b86e0e5e8148b9b2e34989bbb73df5851ba794fb51d72ff452e878dd4e57"
+    },
+    {
+      "path": "fixtures/graph/error.json",
+      "kind": "synthetic",
+      "sha256": "65a295c059589e88250b853720cfec02069bf616ed2b9bc2bc55bf7f916c9f20"
+    },
+    {
+      "path": "fixtures/graph/request.json",
+      "kind": "synthetic",
+      "sha256": "c690ad60b0949141783f6609417f585a81c260d061c5cea680dec734c0d502a0"
+    },
+    {
+      "path": "fixtures/graph/success.json",
+      "kind": "synthetic",
+      "sha256": "dd8a8f33c79760016e23942abd09a2543eb06a3918a82df3df7c6e636956ebb7"
+    },
+    {
+      "path": "fixtures/zimbra/no-data.xml",
+      "kind": "synthetic",
+      "sha256": "a4b9816a52d27c43ef00906f02debd7b40f3a3951ebc524fcb7321d27dd51162"
+    },
+    {
+      "path": "fixtures/zimbra/success.xml",
+      "kind": "synthetic",
+      "sha256": "63109dc499c338e8ea6de6b21223f13d5abdc62cefe69a940fd94f9746cd992b"
+    }
+  ]
+}

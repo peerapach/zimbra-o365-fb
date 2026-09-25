@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original synthetic no-data case; exact installed-build behavior requires A05. -->
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body><GetFreeBusyResponse xmlns="urn:zimbraMail">
+    <usr id="bob@example.invalid"><n s="1789351200000" e="1789365600000"/></usr>
+  </GetFreeBusyResponse></soap:Body>
+</soap:Envelope>

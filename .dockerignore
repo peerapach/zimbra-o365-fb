@@ -1,0 +1,16 @@
+# Deny by default: only the build inputs below enter the context.
+**
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!tsconfig.json
+!src/
+!src/**/
+!src/*.ts
+!src/**/*.ts
+# This is a local scaffold, never a production entrypoint.
+src/scaffold.ts
+**/*.test.ts
+**/*.spec.ts
+**/__tests__/**

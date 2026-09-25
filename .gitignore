@@ -1,0 +1,12 @@
+/node_modules/
+/dist/
+/coverage/
+/.ci-evidence/
+/.env
+/.env.*
+!/.env.example
+/secrets/
+*.pem
+*.key
+*.p12
+*.pfx

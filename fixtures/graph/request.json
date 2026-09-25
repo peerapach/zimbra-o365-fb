@@ -1,0 +1,14 @@
+{
+  "schedules": [
+    "alice@tenant.example.invalid"
+  ],
+  "startTime": {
+    "dateTime": "2026-09-14T02:00:00",
+    "timeZone": "UTC"
+  },
+  "endTime": {
+    "dateTime": "2026-09-14T06:00:00",
+    "timeZone": "UTC"
+  },
+  "availabilityViewInterval": 30
+}

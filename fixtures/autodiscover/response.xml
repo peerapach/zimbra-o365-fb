@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Candidate synthetic EXPR profile, not a promise of Exchange Online acceptance. -->
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+ <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+  <Account><AccountType>email</AccountType><Action>settings</Action>
+   <Protocol><Type>EXPR</Type><ASUrl>https://fb.example.invalid/EWS/Exchange.asmx</ASUrl><EwsUrl>https://fb.example.invalid/EWS/Exchange.asmx</EwsUrl></Protocol>
+  </Account>
+ </Response>
+</Autodiscover>

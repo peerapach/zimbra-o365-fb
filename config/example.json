@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "environment": "lab",
+  "liveAccessEnabled": false,
+  "public": {
+    "bind": "127.0.0.1",
+    "port": 8080,
+    "advertisedOrigin": "https://fb.example.invalid"
+  },
+  "private": {
+    "bind": "127.0.0.1",
+    "port": 8081
+  },
+  "management": {
+    "bind": "127.0.0.1",
+    "port": 8082
+  },
+  "graph": {
+    "cloud": "public",
+    "baseUrl": "https://graph.microsoft.com/v1.0",
+    "tenantId": "REPLACE_WITH_APPROVED_TENANT_ID",
+    "clientId": "REPLACE_WITH_APPROVED_APP_ID",
+    "certificateFile": "/run/secrets/graph-certificate.pem"
+  },
+  "zimbra": {
+    "soapUrl": "https://mail.example.invalid/service/soap",
+    "account": "freebusy-service@example.invalid",
+    "passwordFile": "/run/secrets/zimbra-password"
+  },
+  "principals": [
+    {
+      "id": "pilot-exo",
+      "surface": "m365-inbound",
+      "username": "exo-interop",
+      "secretFile": "/run/secrets/exo-interop",
+      "allowedProvider": "zimbra"
+    },
+    {
+      "id": "pilot-zimbra",
+      "surface": "zimbra-inbound",
+      "username": "zimbra-interop",
+      "secretFile": "/run/secrets/zimbra-interop",
+      "allowedProvider": "graph"
+    }
+  ],
+  "directoryFile": "config/directory.example.json",
+  "limitsFile": "contracts/limits.json",
+  "protocolProfilesFile": "config/protocol-profiles.example.json"
+}

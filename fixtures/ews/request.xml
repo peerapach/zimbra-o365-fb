@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original synthetic request; actual Zimbra/EXO driver profiles must be captured. -->
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
+ xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+ <s:Header>
+  <t:RequestServerVersion Version="Exchange2010_SP1"/>
+  <t:TimeZoneContext><t:TimeZoneDefinition Id="UTC"/></t:TimeZoneContext>
+ </s:Header>
+ <s:Body><m:GetUserAvailabilityRequest>
+  <m:MailboxDataArray><t:MailboxData>
+   <t:Email><t:Address>bob@zfb.example.invalid</t:Address></t:Email>
+   <t:AttendeeType>Required</t:AttendeeType><t:ExcludeConflicts>false</t:ExcludeConflicts>
+  </t:MailboxData></m:MailboxDataArray>
+  <t:FreeBusyViewOptions>
+   <t:TimeWindow><t:StartTime>2026-09-14T02:00:00Z</t:StartTime><t:EndTime>2026-09-14T06:00:00Z</t:EndTime></t:TimeWindow>
+   <t:MergedFreeBusyIntervalInMinutes>30</t:MergedFreeBusyIntervalInMinutes>
+   <t:RequestedView>DetailedMerged</t:RequestedView>
+  </t:FreeBusyViewOptions>
+ </m:GetUserAvailabilityRequest></s:Body>
+</s:Envelope>

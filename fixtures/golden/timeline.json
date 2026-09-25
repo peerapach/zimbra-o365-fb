@@ -1,0 +1,48 @@
+{
+  "kind": "synthetic",
+  "notLiveEvidence": true,
+  "window": {
+    "startMs": 1789351200000,
+    "endMs": 1789365600000,
+    "intervalMinutes": 30
+  },
+  "utc": {
+    "start": "2026-09-14T02:00:00Z",
+    "end": "2026-09-14T06:00:00Z"
+  },
+  "bangkok": {
+    "start": "2026-09-14T09:00:00+07:00",
+    "end": "2026-09-14T13:00:00+07:00"
+  },
+  "slots": [
+    {
+      "status": "free",
+      "startMs": 1789351200000,
+      "endMs": 1789353000000
+    },
+    {
+      "status": "busy",
+      "startMs": 1789353000000,
+      "endMs": 1789354800000
+    },
+    {
+      "status": "tentative",
+      "startMs": 1789354800000,
+      "endMs": 1789356600000
+    },
+    {
+      "status": "oof",
+      "startMs": 1789356600000,
+      "endMs": 1789360200000
+    },
+    {
+      "status": "free",
+      "startMs": 1789360200000,
+      "endMs": 1789365600000
+    }
+  ],
+  "expectedMerged": "02133000",
+  "allFreeMerged": "00000000",
+  "allNoDataMerged": "44444444",
+  "expectedFailure": "per-target error / None; never allFreeMerged"
+}

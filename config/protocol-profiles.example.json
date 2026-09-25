@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "candidate-not-live-verified",
+  "productionApproved": false,
+  "autodiscover": {
+    "responseProtocol": "EXPR",
+    "fields": [
+      "ASUrl",
+      "EwsUrl"
+    ],
+    "gateEvidence": null
+  },
+  "ews": {
+    "soapVersion": "1.1",
+    "acceptedViews": [
+      "MergedOnly",
+      "FreeBusy",
+      "FreeBusyMerged",
+      "Detailed",
+      "DetailedMerged"
+    ],
+    "responsePolicy": "FreeBusyMerged-without-private-details",
+    "gateEvidence": null
+  },
+  "timezoneProfiles": [
+    {
+      "id": "utc",
+      "names": [
+        "UTC",
+        "Etc/UTC"
+      ],
+      "iana": "Etc/UTC",
+      "status": "synthetic-only"
+    },
+    {
+      "id": "bangkok",
+      "names": [
+        "Asia/Bangkok",
+        "SE Asia Standard Time"
+      ],
+      "iana": "Asia/Bangkok",
+      "status": "synthetic-only"
+    },
+    {
+      "id": "zimbra-greenwich-zero",
+      "names": [
+        "Greenwich Standard Time"
+      ],
+      "iana": "Etc/UTC",
+      "requiresLegacyZeroBias": true,
+      "status": "must-capture-installed-driver"
+    }
+  ]
+}
