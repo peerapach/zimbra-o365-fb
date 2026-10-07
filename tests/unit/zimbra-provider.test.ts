@@ -66,6 +66,17 @@ describe('Zimbra fixture candidate normalization', () => {
       .toMatchObject({ kind: 'error', reason: 'not-authorized' });
   });
 
+  it.each(['false', '0'])('rejects interval-level denied permission %s as Zimbra emits it', permission => {
+    expect(normalize(user(`<n s="${base}" e="${window.endMs}" hasPermission="${permission}"/>`)))
+      .toMatchObject({ kind: 'error', reason: 'not-authorized' });
+    expect(normalize(user(`<f s="${base}" e="${base + 1800000}"/><n s="${base + 1800000}" e="${window.endMs}" hasPermission="${permission}"/>`)))
+      .toMatchObject({ kind: 'error', reason: 'not-authorized' });
+  });
+
+  it.each(['true', '1'])('accepts explicit interval permission %s', permission => {
+    expect(normalize(user(`<f s="${base}" e="${window.endMs}" hasPermission="${permission}"/>`))).toMatchObject({ kind: 'ok' });
+  });
+
   it.each([
     ['missing user', wrap(`<GetFreeBusyResponse xmlns="${MAIL}"/>`)],
     ['duplicate user', success.replace('</usr>', '</usr><usr id="bob@example.invalid"/>')],
@@ -85,6 +96,7 @@ describe('Zimbra fixture candidate normalization', () => {
     ['forged attribute', user(`<f xmlns:x="urn:forged" x:s="${base}" e="${window.endMs}"/>`)],
     ['unknown permission', user('', 'hasPermission="maybe"')],
     ['forged permission', user('', 'xmlns:x="urn:forged" x:hasPermission="false"')],
+    ['unknown interval permission', user(`<n s="${base}" e="${window.endMs}" hasPermission="maybe"/>`)],
     ['duplicate Body', success.replace('</soap:Envelope>', '<soap:Body/></soap:Envelope>')],
     ['extra body response', success.replace('</soap:Body>', '<extra/></soap:Body>')],
     ['required header', success.replace('<soap:Body>', '<soap:Header><x xmlns="urn:foreign" soap:mustUnderstand="1"/></soap:Header><soap:Body>')],

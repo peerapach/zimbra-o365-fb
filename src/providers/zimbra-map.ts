@@ -50,13 +50,18 @@ export function normalizeZimbra(tree: XmlNode, target: Target, window: WindowUtc
     const identity = attribute(user, 'id');
     if (identity === undefined || identity.toLowerCase() !== target.canonicalSmtp.toLowerCase() || user.text.trim()) throw new TypeError();
     if (!permission(response) || !permission(user)) return failure('not-authorized');
+    // Zimbra sets hasPermission="false" on the interval element (ToXML.encodeFreeBusy), e.g. the
+    // <n/> produced for an EWS ErrorNoFreeBusyAccess; it never appears on usr or the response.
+    let denied = false;
     const intervals = user.children.map(node => {
       if (node.uri !== MAIL || !Object.hasOwn(statuses, node.local) || node.children.length || node.text.trim()) throw new TypeError();
+      if (!permission(node)) denied = true;
       const startMs = instant(node, 's');
       const endMs = instant(node, 'e');
       if (endMs <= startMs || startMs < window.startMs || endMs > window.endMs) throw new RangeError();
       return { startMs, endMs, status: statuses[node.local]! };
     });
+    if (denied) return failure('not-authorized');
     const normalized = normalizeFreeBusyGrid(window, intervals, intervals);
     return Object.freeze({ kind: 'ok', targetId: target.entryId, coverage: normalized.window,
       slots: normalized.intervals, observedAtMs: nowMs });
