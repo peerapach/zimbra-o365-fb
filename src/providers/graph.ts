@@ -3,6 +3,7 @@ import { abortable, TransportError } from '../http/outbound.js';
 import { GraphTokenError } from './graph-token.js';
 import { normalizeGraph } from './graph-map.js';
 import { availabilityRetry } from '../resilience/retry.js';
+import { isUtf8MediaType } from '../http/content-type.js';
 
 interface GraphProviderOptions {
   readonly transport: HttpTransport;
@@ -76,7 +77,7 @@ export function createGraphProvider(options: GraphProviderOptions): Availability
         }));
         if (response.status !== 200) return error(target, httpFailure(response.status));
         const contentType = response.headers['content-type'] ?? response.headers['Content-Type'] ?? '';
-        if (!/^application\/json(?:\s*;\s*charset=(?:utf-8|"utf-8"))?\s*$/i.test(contentType)) return error(target, 'invalid-response');
+        if (!isUtf8MediaType(contentType, 'application/json', true)) return error(target, 'invalid-response');
         if (!(response.body instanceof Uint8Array) || response.body.byteLength > maxResponseBytes) return error(target, 'invalid-response');
         let payload: unknown;
         try { payload = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.body)) as unknown; }

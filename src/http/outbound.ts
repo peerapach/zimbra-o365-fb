@@ -1,5 +1,6 @@
 import type { HttpTransport } from '../core/types.js';
 import type { createMetrics } from '../observability/metrics.js';
+import { isUtf8MediaType } from './content-type.js';
 
 export class TransportError extends Error {
   constructor(readonly code: 'destination' | 'invalid-response' | 'timeout' | 'backend-unavailable', readonly retryable = false) {
@@ -91,7 +92,7 @@ export function createOutboundTransport(options: OutboundOptions, fetcher: typeo
         if (chunk.value.byteLength) chunks.push(chunk.value);
       }
       if (length !== null && Number(length) !== received) throw new TransportError('invalid-response');
-      if (!new RegExp(`^${media}(?:\\s*;\\s*charset=(?:utf-8|"utf-8"))?\\s*$`, 'i').test(contentType)
+      if (!isUtf8MediaType(contentType, media, input.url !== zimbraSoapUrl)
         && !(received === 0 && [429, 502, 503, 504].includes(response.status))) throw new TransportError('invalid-response');
       const body = new Uint8Array(received);
       let offset = 0;

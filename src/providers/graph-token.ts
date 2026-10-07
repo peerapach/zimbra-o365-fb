@@ -4,6 +4,7 @@ import type { AccessToken, ClientCertificateCredentialOptions, TokenCredential }
 import type { Clock, TokenSource } from '../core/types.js';
 import type { ValidatedConfig } from '../config/validate.js';
 import { abortable, TransportError } from '../http/outbound.js';
+import { isUtf8MediaType } from '../http/content-type.js';
 
 export class GraphTokenError extends Error {
   constructor(readonly code: 'token-unavailable' | 'timeout') { super('Graph token unavailable'); }
@@ -44,7 +45,7 @@ function certificateHttpClient(tenant: string, signal: AbortSignal, fetcher: typ
       const encoding = response.headers.get('content-encoding');
       if (response.redirected || (response.status >= 300 && response.status < 400)
         || (encoding !== null && encoding.toLowerCase() !== 'identity')
-        || !/^application\/json(?:\s*;\s*charset=(?:utf-8|"utf-8"))?\s*$/i.test(response.headers.get('content-type') ?? '')
+        || !isUtf8MediaType(response.headers.get('content-type') ?? '', 'application/json')
         || (length !== null && (!/^\d+$/.test(length) || Number(length) > 4194304))) throw new GraphTokenError('token-unavailable');
       const chunks: Uint8Array[] = [];
       let bytes = 0;

@@ -21,6 +21,11 @@ describe('fixed outbound transport', () => {
     expect(headers.get('authorization')).toBe('Bearer synthetic');
     expect(headers.get('accept-encoding')).toBe('identity');
   });
+  it('accepts the live Graph OData JSON content-type', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { headers: {
+      'content-type': 'application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8' } }));
+    await expect(createOutboundTransport(options, fetcher).request(input())).resolves.toMatchObject({ status: 200 });
+  });
   it.each([
     'https://outlook.office365.com/EWS/Exchange.asmx',
     'https://graph.microsoft.com/v1.0/me/calendar/getSchedule',

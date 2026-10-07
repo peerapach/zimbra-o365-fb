@@ -147,4 +147,24 @@ describe('Graph getSchedule provider', () => {
     await expect(provider.lookup(target, window, context()))
       .resolves.toMatchObject({ kind: 'error', targetId: 'alice-entry', reason: 'invalid-response' });
   });
+
+  it('accepts the live Graph v1.0 shape: OData content-type, @odata.context, workingHours, 7-digit fractions', async () => {
+    const live = changedSchedule(success) as { value: Array<Record<string, unknown>> } & Record<string, unknown>;
+    live['@odata.context'] = 'https://graph.microsoft.com/v1.0/$metadata#Collection(microsoft.graph.scheduleInformation)';
+    const schedule = live.value[0]!;
+    for (const item of schedule.scheduleItems as Array<{ start: { dateTime: string }; end: { dateTime: string } }>) {
+      item.start.dateTime += '.0000000'; item.end.dateTime += '.0000000';
+    }
+    schedule.workingHours = { daysOfWeek: ['monday'], startTime: '08:00:00.0000000', endTime: '17:00:00.0000000', timeZone: { name: 'UTC' } };
+    const response = { ...httpResponse(live), headers: {
+      'content-type': 'application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8' } };
+    const { provider } = harness(response);
+    await expect(provider.lookup(target, window, context())).resolves.toEqual(normalizeGraph(success, target, window, 1790000000000));
+  });
+
+  it.each(['application/json; charset=utf-16', 'application/json; odata.metadata=evil', 'application/json; foo=bar',
+    'application/json; charset=utf-8; charset=utf-8', 'application/jsonx', 'text/json'])('rejects media type %s', async contentType => {
+    const { provider } = harness({ ...httpResponse(success), headers: { 'content-type': contentType } });
+    await expect(provider.lookup(target, window, context())).resolves.toMatchObject({ kind: 'error', reason: 'invalid-response' });
+  });
 });
