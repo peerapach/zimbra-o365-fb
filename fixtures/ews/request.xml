@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Original synthetic request; actual Zimbra/EXO driver profiles must be captured. -->
+<!-- Original synthetic request shaped like exchangelib GetUserAvailability (header TimeZoneContext + body legacy TimeZone); actual Zimbra/EXO driver profiles must be captured. -->
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
  xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
  xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
@@ -8,8 +8,12 @@
   <t:TimeZoneContext><t:TimeZoneDefinition Id="UTC"/></t:TimeZoneContext>
  </s:Header>
  <s:Body><m:GetUserAvailabilityRequest>
+  <t:TimeZone><t:Bias>0</t:Bias>
+   <t:StandardTime><t:Bias>0</t:Bias><t:Time>00:00:00</t:Time><t:DayOrder>1</t:DayOrder><t:Month>1</t:Month><t:DayOfWeek>Monday</t:DayOfWeek></t:StandardTime>
+   <t:DaylightTime><t:Bias>0</t:Bias><t:Time>00:00:00</t:Time><t:DayOrder>5</t:DayOrder><t:Month>12</t:Month><t:DayOfWeek>Sunday</t:DayOfWeek></t:DaylightTime>
+  </t:TimeZone>
   <m:MailboxDataArray><t:MailboxData>
-   <t:Email><t:Address>bob@zfb.example.invalid</t:Address></t:Email>
+   <t:Email><t:Address>bob@zfb.example.invalid</t:Address><t:RoutingType>SMTP</t:RoutingType></t:Email>
    <t:AttendeeType>Required</t:AttendeeType><t:ExcludeConflicts>false</t:ExcludeConflicts>
   </t:MailboxData></m:MailboxDataArray>
   <t:FreeBusyViewOptions>

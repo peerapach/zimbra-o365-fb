@@ -38,6 +38,6 @@ export function availabilityOperation(tree: XmlNode, soapAction?: string): { ope
   checkAttributes(operation);
   if (operation.text.trim() || operation.children.some(child =>
     !(child.uri === MESSAGES && child.local === 'MailboxDataArray')
-    && !(child.uri === TYPES && child.local === 'FreeBusyViewOptions'))) invalidRequest();
+    && !(child.uri === TYPES && (child.local === 'FreeBusyViewOptions' || child.local === 'TimeZone')))) invalidRequest();
   return { operation, ...(header ? { header } : {}) };
 }

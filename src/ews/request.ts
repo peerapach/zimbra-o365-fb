@@ -55,11 +55,51 @@ function decodeHeader(header?: XmlNode): string | undefined {
   return id.value;
 }
 
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+// Body legacy TimeZone (SerializableTimeZone) bias -> fixed profile. DST-observing bodies are not approved.
+const biasZones: Readonly<Record<string, string>> = Object.freeze({ '0': 'UTC', '-420': 'Asia/Bangkok' });
+
+function integer(parent: XmlNode, name: string, min: number, max: number): number {
+  const value = scalar(requiredChild(parent, TYPES, name));
+  if (!/^-?[0-9]{1,4}$/.test(value)) invalidRequest();
+  const number = Number(value);
+  if (number < min || number > max) invalidRequest();
+  return number;
+}
+
+function decodeTransition(parent: XmlNode, name: string): number {
+  const node = requiredChild(parent, TYPES, name);
+  structure(node, ['Bias', 'Time', 'DayOrder', 'Month', 'DayOfWeek']);
+  const bias = integer(node, 'Bias', -1440, 1440);
+  if (!/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(scalar(requiredChild(node, TYPES, 'Time')))) invalidRequest();
+  integer(node, 'DayOrder', 1, 5);
+  integer(node, 'Month', 1, 12);
+  if (!weekdays.includes(scalar(requiredChild(node, TYPES, 'DayOfWeek')))) invalidRequest();
+  return bias;
+}
+
+/** exchangelib-style body t:TimeZone; it must precede MailboxDataArray and describe a fixed approved offset. */
+function decodeBodyTimeZone(operation: XmlNode): string | undefined {
+  const node = optionalChild(operation, TYPES, 'TimeZone');
+  if (!node) return undefined;
+  if (operation.children[0] !== node) invalidRequest();
+  structure(node, ['Bias', 'StandardTime', 'DaylightTime']);
+  const bias = integer(node, 'Bias', -1440, 1440);
+  if (decodeTransition(node, 'StandardTime') !== 0 || decodeTransition(node, 'DaylightTime') !== 0) invalidRequest();
+  const zone = biasZones[String(bias)];
+  if (zone === undefined) return invalidRequest();
+  return zone;
+}
+
 function decodeMailbox(mailbox: XmlNode): string {
   structure(mailbox, ['Email', 'AttendeeType', 'ExcludeConflicts']);
   const email = requiredChild(mailbox, TYPES, 'Email');
-  structure(email, ['Address']);
+  structure(email, ['Name', 'Address', 'RoutingType']);
   const address = scalar(requiredChild(email, TYPES, 'Address'));
+  const name = optionalChild(email, TYPES, 'Name');
+  if (name) scalar(name);
+  const routing = optionalChild(email, TYPES, 'RoutingType');
+  if (routing && scalar(routing) !== 'SMTP') invalidRequest();
   const parts = address.split('@');
   const local = parts[0] ?? '';
   const domain = parts[1] ?? '';
@@ -77,7 +117,11 @@ function decodeMailbox(mailbox: XmlNode): string {
 /** Pure protocol decoding: authorization and provider work belong to later stages. */
 export function decodeAvailability(tree: XmlNode, options: DecodeOptions): AvailabilityInput {
   const { operation, header } = availabilityOperation(tree, options.soapAction);
-  const zone = decodeHeader(header);
+  const contextZone = decodeHeader(header);
+  const bodyZone = decodeBodyTimeZone(operation);
+  // Header context and body TimeZone must agree on the fixed offset; neither silently overrides the other.
+  if (contextZone !== undefined && bodyZone !== undefined && resolveFixedOffset(contextZone) !== resolveFixedOffset(bodyZone)) invalidRequest();
+  const zone = contextZone ?? bodyZone;
   const array = requiredChild(operation, MESSAGES, 'MailboxDataArray');
   structure(array, ['MailboxData']);
   const mailboxes = childrenNamed(array, TYPES, 'MailboxData');

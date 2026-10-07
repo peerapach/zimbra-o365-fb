@@ -16,6 +16,12 @@ const T = 'http://schemas.microsoft.com/exchange/services/2006/types';
 const json = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8'));
 const config = validateConfig(json('config/example.json'), json('config/directory.example.json'), json('contracts/limits.json'), () => true);
 const fixture = readFileSync('fixtures/ews/request.xml', 'utf8');
+// Header context and body t:TimeZone must agree; +07 contexts also need the -420 body bias.
+const withZone = (xml: string, zone: string) => {
+  const out = xml.replace('Id="UTC"', `Id="${zone}"`);
+  return zone === 'Asia/Bangkok' || zone === 'SE Asia Standard Time' ? out.replace('<t:TimeZone><t:Bias>0</t:Bias>', '<t:TimeZone><t:Bias>-420</t:Bias>') : out;
+};
+const withoutBodyZone = (xml: string) => xml.replace(/<t:TimeZone>[\s\S]*?<\/t:TimeZone>\s*/, '');
 const apps: Array<Awaited<ReturnType<typeof startGateway>>> = [];
 afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.shutdown())); });
 function shape(body: string) {
@@ -56,7 +62,7 @@ describe.each(['public', 'private'] as const)('W26 original EWS vector via %s li
     const app = await setup();
     const utc = await app.send(side);
     for (const suffix of ['', '+07:00']) {
-      const body = fixture.replace('Id="UTC"', `Id="${zone}"`).replace('02:00:00Z', `09:00:00${suffix}`).replace('06:00:00Z', `13:00:00${suffix}`);
+      const body = withZone(fixture, zone).replace('02:00:00Z', `09:00:00${suffix}`).replace('06:00:00Z', `13:00:00${suffix}`);
       const response = await app.send(side, body);
       expect(response.statusCode).toBe(200);
       expect(shape(response.body)).toEqual(shape(utc.body));
@@ -75,8 +81,8 @@ describe.each(['public', 'private'] as const)('W26 original EWS vector via %s li
   it.each(['UTC', 'Etc/UTC', 'absent-Z', 'absent-offset'])('retains exact UTC output for %s context', async zone => {
     const app = await setup();
     let body = zone.startsWith('absent')
-      ? fixture.replace('<t:TimeZoneContext><t:TimeZoneDefinition Id="UTC"/></t:TimeZoneContext>', '')
-      : fixture.replace('Id="UTC"', `Id="${zone}"`);
+      ? withoutBodyZone(fixture.replace('<t:TimeZoneContext><t:TimeZoneDefinition Id="UTC"/></t:TimeZoneContext>', ''))
+      : withZone(fixture, zone);
     if (zone === 'absent-offset') body = body.replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00');
     const response = await app.send(side, body);
     expect(response.statusCode).toBe(200);
@@ -89,7 +95,7 @@ describe.each(['public', 'private'] as const)('W26 original EWS vector via %s li
 
   it.each(['None', 'MergedOnly', 'FreeBusy', 'FreeBusyMerged', 'DetailedMerged'])('preserves Bangkok %s view privacy and omission rules', async view => {
     const app = await setup();
-    const body = fixture.replace('Id="UTC"', 'Id="Asia/Bangkok"').replace('02:00:00Z', '09:00:00')
+    const body = withZone(fixture, 'Asia/Bangkok').replace('02:00:00Z', '09:00:00')
       .replace('06:00:00Z', '13:00:00').replace('DetailedMerged', view);
     const response = await app.send(side, body);
     expect(response.statusCode).toBe(200);
@@ -104,8 +110,8 @@ describe.each(['public', 'private'] as const)('W26 original EWS vector via %s li
   it('preserves duplicate order and error isolation for Bangkok response text', async () => {
     const app = await setup();
     const mailbox = fixture.slice(fixture.indexOf('<t:MailboxData>'), fixture.indexOf('</t:MailboxData>') + '</t:MailboxData>'.length);
-    const body = fixture.replace(mailbox, mailbox + mailbox.replace('bob@zfb.example.invalid', 'missing@example.invalid') + mailbox)
-      .replace('Id="UTC"', 'Id="SE Asia Standard Time"').replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00');
+    const body = withZone(fixture.replace(mailbox, mailbox + mailbox.replace('bob@zfb.example.invalid', 'missing@example.invalid') + mailbox)
+      .replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00'), 'SE Asia Standard Time');
     const response = await app.send(side, body);
     const results = shape(response.body);
     expect(results).toHaveLength(3);
@@ -124,7 +130,7 @@ describe.each(['public', 'private'] as const)('W26 original EWS vector via %s li
         body = body.replaceAll(`<${from}:`, `<${to}:`).replaceAll(`</${from}:`, `</${to}:`).replace(`xmlns:${from}=`, `xmlns:${to}=`);
       }
     }
-    if (variant === 'offset-equivalent') body = body.replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00').replace('Id="UTC"', 'Id="SE Asia Standard Time"');
+    if (variant === 'offset-equivalent') body = withZone(body.replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00'), 'SE Asia Standard Time');
     const response = await app.send(side, body, `"${M}/GetUserAvailability"`);
     expect(response.statusCode).toBe(200);
     expect(shape(response.body)).toEqual(shape(readFileSync('fixtures/ews/success.xml', 'utf8')));
@@ -148,11 +154,16 @@ describe.each(['public', 'private'] as const)('W26 original EWS vector via %s li
   it.each([
     ['wrong-namespace', fixture.replace(M, 'urn:untrusted')],
     ['unsupported-view', fixture.replace('DetailedMerged', 'Detailed')],
-    ['unsupported-zone', fixture.replace('Id="UTC"', 'Id="Unknown Zone"')],
-    ['candidate-London', fixture.replace('Id="UTC"', 'Id="Europe/London"')],
-    ['candidate-Pacific', fixture.replace('Id="UTC"', 'Id="Pacific Standard Time"')],
-    ['candidate-Greenwich', fixture.replace('Id="UTC"', 'Id="Greenwich Standard Time"')],
-    ['legacy-timezone', fixture.replace('<m:MailboxDataArray>', '<t:TimeZone><t:Bias>0</t:Bias></t:TimeZone><m:MailboxDataArray>')],
+    ['unsupported-zone', withZone(fixture, 'Unknown Zone')],
+    ['candidate-London', withZone(fixture, 'Europe/London')],
+    ['candidate-Pacific', withZone(fixture, 'Pacific Standard Time')],
+    ['candidate-Greenwich', withZone(fixture, 'Greenwich Standard Time')],
+    ['legacy-timezone-incomplete', withoutBodyZone(fixture).replace('<m:MailboxDataArray>', '<t:TimeZone><t:Bias>0</t:Bias></t:TimeZone><m:MailboxDataArray>')],
+    ['legacy-timezone-dst', fixture.replace('<t:DaylightTime><t:Bias>0</t:Bias>', '<t:DaylightTime><t:Bias>-60</t:Bias>')],
+    ['legacy-timezone-conflict', fixture.replace('<t:TimeZone><t:Bias>0</t:Bias>', '<t:TimeZone><t:Bias>-420</t:Bias>')],
+    ['legacy-timezone-unapproved-bias', fixture.replace('<t:TimeZone><t:Bias>0</t:Bias>', '<t:TimeZone><t:Bias>-540</t:Bias>')],
+    ['legacy-timezone-misplaced', withoutBodyZone(fixture).replace('<t:FreeBusyViewOptions>', `${fixture.match(/<t:TimeZone>[\s\S]*?<\/t:TimeZone>/)![0]}<t:FreeBusyViewOptions>`)],
+    ['non-smtp-routing', fixture.replace('<t:RoutingType>SMTP</t:RoutingType>', '<t:RoutingType>EX</t:RoutingType>')],
     ['invalid-interval', fixture.replace('>30<', '>0<')],
     ['reverse-window', fixture.replace('2026-09-14T06:00:00Z', '2026-09-14T01:00:00Z')],
     ['duplicate-view', fixture.replace('</t:RequestedView>', '</t:RequestedView><t:RequestedView>None</t:RequestedView>')],

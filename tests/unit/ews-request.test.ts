@@ -9,13 +9,19 @@ const fixture = readFileSync(new URL('../../fixtures/ews/request.xml', import.me
 const action = 'http://schemas.microsoft.com/exchange/services/2006/messages/GetUserAvailability';
 const limits = { maxTargetsPerRequest: 100, minIntervalMinutes: 5, maxIntervalMinutes: 1440,
   maxRangeDays: 61, maxGridSlotsPerTarget: 17568 };
+// Header context and body t:TimeZone must agree; +07 contexts also need the -420 body bias.
+const withZone = (xml: string, zone: string) => {
+  const out = xml.replace('Id="UTC"', `Id="${zone}"`);
+  return zone === 'Asia/Bangkok' || zone === 'SE Asia Standard Time' ? out.replace('<t:TimeZone><t:Bias>0</t:Bias>', '<t:TimeZone><t:Bias>-420</t:Bias>') : out;
+};
+const withoutBodyZone = (xml: string) => xml.replace(/<t:TimeZone>[\s\S]*?<\/t:TimeZone>\s*/, '');
 const tree = (xml: string) => parseXmlBounded(Buffer.from(xml));
 const decode = (xml = fixture, soapAction: string | undefined = action) =>
   decodeAvailability(tree(xml), { limits, ...(soapAction === undefined ? {} : { soapAction }) });
 
 describe('GetUserAvailability decoding', () => {
   it.each(['Asia/Bangkok', 'SE Asia Standard Time'])('retains validated %s response offset outside the UTC window', zone => {
-    const xml = fixture.replace('Id="UTC"', `Id="${zone}"`).replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00');
+    const xml = withZone(fixture, zone).replace('02:00:00Z', '09:00:00+07:00').replace('06:00:00Z', '13:00:00+07:00');
     const value = decode(xml);
     expect(value).toMatchObject({ responseOffset: '+07:00' });
     expect(value.window).toEqual({ startMs: 1789351200000, endMs: 1789365600000, intervalMinutes: 30 });
@@ -30,7 +36,7 @@ describe('GetUserAvailability decoding', () => {
   });
 
   it.each(['Europe/London', 'Pacific Standard Time', 'Greenwich Standard Time', '+07:00', '__proto__'])('does not enable unapproved fixed context %s', zone => {
-    expect(() => decode(fixture.replace('Id="UTC"', `Id="${zone}"`))).toThrow();
+    expect(() => decode(withZone(fixture, zone))).toThrow();
     expect(() => resolveFixedOffset(zone)).toThrow();
   });
 
@@ -152,15 +158,33 @@ describe('GetUserAvailability decoding', () => {
       .replace('<t:TimeZoneContext>', `<t:TimeZoneContext s:mustUnderstand="${value}">`))).toEqual(decode());
   });
 
-  it('accepts explicit instants without optional headers and rejects naive ones', () => {
-    const xml = fixture.replace(/<s:Header>[\s\S]*?<\/s:Header>/, '');
+  it('accepts explicit instants without optional headers or body TimeZone and rejects naive ones', () => {
+    const xml = withoutBodyZone(fixture.replace(/<s:Header>[\s\S]*?<\/s:Header>/, ''));
     expect(decode(xml)).toEqual(decode());
     expect(() => decode(xml.replaceAll('00Z', '00'))).toThrow();
   });
 
+  it.each([['0', '+00:00', '02'], ['-420', '+07:00', '09']] as const)('uses exchangelib body TimeZone bias %s alone for naive instants', (bias, offset, hour) => {
+    const xml = fixture.replace(/<s:Header>[\s\S]*?<\/s:Header>/, '')
+      .replace('<t:TimeZone><t:Bias>0</t:Bias>', `<t:TimeZone><t:Bias>${bias}</t:Bias>`)
+      .replace('02:00:00Z', `${hour}:00:00`).replace('06:00:00Z', `${String(Number(hour) + 4).padStart(2, '0')}:00:00`);
+    expect(decode(xml)).toEqual({ ...decode(), responseOffset: offset });
+  });
+
+  it.each([
+    ['DST body', '<t:DaylightTime><t:Bias>0</t:Bias>', '<t:DaylightTime><t:Bias>-60</t:Bias>'],
+    ['body/header conflict', '<t:TimeZone><t:Bias>0</t:Bias>', '<t:TimeZone><t:Bias>-420</t:Bias>'],
+    ['unapproved bias', '<t:TimeZone><t:Bias>0</t:Bias>', '<t:TimeZone><t:Bias>-540</t:Bias>'],
+    ['bad weekday', '<t:DayOfWeek>Monday</t:DayOfWeek>', '<t:DayOfWeek>Funday</t:DayOfWeek>'],
+    ['missing StandardTime', /<t:StandardTime>[\s\S]*?<\/t:StandardTime>/, ''],
+    ['non-SMTP routing', '<t:RoutingType>SMTP</t:RoutingType>', '<t:RoutingType>EX</t:RoutingType>'],
+  ] as const)('rejects body TimeZone/Email variant: %s', (_name, from, to) => {
+    expect(() => decode(fixture.replace(from, to))).toThrow();
+  });
+
   it.each(['UTC', 'Etc/UTC', 'Asia/Bangkok', 'SE Asia Standard Time'])('decodes naive instants with reviewed fixed context %s', zone => {
     const bangkok = zone.includes('Asia');
-    const xml = fixture.replace('Id="UTC"', `Id="${zone}"`)
+    const xml = withZone(fixture, zone)
       .replace('02:00:00Z', bangkok ? '09:00:00' : '02:00:00')
       .replace('06:00:00Z', bangkok ? '13:00:00' : '06:00:00');
     expect(decode(xml)).toEqual({ ...decode(), responseOffset: bangkok ? '+07:00' : '+00:00' });

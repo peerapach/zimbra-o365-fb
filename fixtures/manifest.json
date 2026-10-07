@@ -20,7 +20,7 @@
     {
       "path": "fixtures/ews/request.xml",
       "kind": "synthetic",
-      "sha256": "bfb52cccac672f0d14e166f63c87e10366783bc1dc2ec2edfedd5b9d7ab954db"
+      "sha256": "6f35200bfdd80cf865bc8d6a3c724b30acc56d5717c5f235b92ee6ce00bdf2e2"
     },
     {
       "path": "fixtures/ews/success.xml",
